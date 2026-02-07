@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>BT Ultimate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: white; -webkit-tap-highlight-color: transparent; }
+        .msg-me { background: #db2777; color: white; border-radius: 16px 16px 0 16px; margin-left: auto; max-width: 80%; }
+        .msg-other { background: #1e293b; color: #e2e8f0; border-radius: 16px 16px 16px 0; margin-right: auto; max-width: 80%; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+    <div class="bg-pink-700 p-4 shadow-lg flex justify-between items-center z-10">
+        <div><h1 class="font-black text-sm tracking-wide">ULTIMATE CHAT</h1><p id="status" class="text-[10px] text-pink-200">Déconnecté</p></div>
+        <button onclick="askPerms()" class="bg-pink-900/40 p-2 rounded text-[10px] font-bold border border-pink-400/50">PERMISSIONS</button>
+    </div>
+    <div id="list" class="flex-1 p-4 overflow-y-auto space-y-3 pb-24">
+        <div class="text-center text-[10px] text-slate-500 mt-10">VERSION V6 SIGNATURE<br>Fichier: CHAT-ULTIMATE.apk</div>
+    </div>
+    <div class="bg-slate-900 p-3 border-t border-slate-700 flex gap-2 fixed bottom-0 w-full">
+        <button onclick="scan()" class="bg-slate-800 text-slate-300 p-3 rounded-xl font-bold text-xs">SCAN</button>
+        <input id="input" type="text" class="flex-1 bg-slate-800 text-white rounded-xl px-4 outline-none text-sm border border-slate-700 focus:border-pink-500" placeholder="...">
+        <button onclick="send()" class="bg-pink-600 text-white p-3 rounded-xl font-bold shadow-lg">➤</button>
+    </div>
+    <script>
+        function log(m, t='sys') {
+            const d = document.createElement('div');
+            d.className = t==='me'?'msg-me p-3 text-sm':t==='sys'?'text-center text-[10px] text-slate-500 my-2 uppercase font-bold':'msg-other p-3 text-sm';
+            d.innerText = m; document.getElementById('list').appendChild(d); window.scrollTo(0, document.body.scrollHeight);
+        }
+        document.addEventListener('deviceready', ()=>{ log("Prêt", 'sys'); askPerms(true); bluetoothSerial.subscribe('\n', d=>log(d,'other'), e=>{}); }, false);
+        function askPerms(s=false) { if(window.cordova) { const p=cordova.plugins.permissions; p.requestPermissions([p.BLUETOOTH_SCAN, p.BLUETOOTH_CONNECT, p.ACCESS_FINE_LOCATION], x=>{if(!s)alert("OK")}, e=>{}); } }
+        function scan() { log("Recherche...", 'sys'); bluetoothSerial.list(l=>{ if(l.length==0)return alert("Rien trouvé"); l.forEach(d=>{ if(confirm("Connecter "+d.name+"?")) bluetoothSerial.connect(d.id, ()=>{document.getElementById('status').innerText="Connecté"; log("Connecté",'sys')}, e=>alert(e)); }); }, e=>alert(e)); }
+        function send() { const v=document.getElementById('input').value; if(v) bluetoothSerial.write(v+"\n", ()=>{log(v,'me');document.getElementById('input').value=''}, ()=>{}); }
+    </script>
+</body>
+</html>
